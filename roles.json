@@ -1,0 +1,124 @@
+{
+  "team_roles": [
+    {
+      "name": "Rockford",
+      "role_id": "892930514942562324"
+    },
+    {
+      "name": "Minnesota TC",
+      "role_id": "895901154414825492"
+    },
+    {
+      "name": "Wisconsin Platteville",
+      "role_id": "896060582296449065"
+    },
+    {
+      "name": "East Tennessee State",
+      "role_id": "895172165517860875"
+    },
+    {
+      "name": "Bowling Green State",
+      "role_id": "892930099085709332"
+    },
+    {
+      "name": "UIUC",
+      "role_id": "892929573002559508"
+    },
+    {
+      "name": "Oklahoma",
+      "role_id": "895773810228334602"
+    },
+    {
+      "name": "Davenport",
+      "role_id": "892930228278677535"
+    },
+    {
+      "name": "Iowa",
+      "role_id": "892929838367776788"
+    },
+    {
+      "name": "DePaul",
+      "role_id": "892929949835612200"
+    },
+    {
+      "name": "Penn State",
+      "role_id": "892929805132116039"
+    },
+    {
+      "name": "Edinboro",
+      "role_id": "892930425905893407"
+    },
+    {
+      "name": "Carnegie Mellon",
+      "role_id": "895772690198175786"
+    },
+    {
+      "name": "Purdue",
+      "role_id": "864689743651143710"
+    },
+    {
+      "name": "Central Michigan",
+      "role_id": "892930144182894653"
+    },
+    {
+      "name": "Central Missouri",
+      "role_id": "892929523203579904"
+    },
+    {
+      "name": "Illinois State",
+      "role_id": "892930036443775006"
+    },
+    {
+      "name": "Cincinnati",
+      "role_id": "892929982916083785"
+    },
+    {
+      "name": "Virginia Tech",
+      "role_id": "892929896253390878"
+    },
+    {
+      "name": "Tennessee Tech",
+      "role_id": "892930368058036225"
+    },
+    {
+      "name": "Kettering",
+      "role_id": "864689768099872778"
+    },
+    {
+      "name": "Trine",
+      "role_id": "892930263972208691"
+    },
+    {
+      "name": "Bradley",
+      "role_id": "892930183110213662"
+    },
+    {
+      "name": "Indiana",
+      "role_id": "892929667336663061"
+    },
+    {
+      "name": "Western Michigan",
+      "role_id": "892929419474264074"
+    },
+    {
+      "name": "Wisconsin Madison",
+      "role_id": "892929696520622112"
+    },
+    {
+      "name": "Ohio State",
+      "role_id": "892929629264949248"
+    },
+    {
+      "name": "Muskingum",
+      "role_id": "892930478632497192"
+    },
+    {
+      "name": "Holy Cross",
+      "role_id": "895091655659646976"
+    },
+    {
+      "name": "Case Western Reserve",
+      "role_id": "892930303298007050"
+    }
+  ]
+}
