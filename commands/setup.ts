@@ -1,19 +1,25 @@
-import { Permissions } from "discord.js";
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu} = require("discord.js");
-const { team_roles } = require('../roles.json');
+import {Guild,
+    MessageActionRow,
+    MessageButton,
+    MessageEmbed,
+    MessageSelectMenu,
+    Snowflake
+} from "discord.js";
+import {team_roles} from '../roles.json';
+import {SlashCommandBuilder} from "@discordjs/builders";
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('setup')
         .setDescription('Creates a various purpose menu')
+        .setDefaultPermission(false)
         .addStringOption(option => option
             .setName('menu_name')
             .setDescription('The name of the menu to setup')
             .setRequired(true)
             .addChoice('roles', 'roles_menu')
             .addChoice('teams', 'teams_menu')
-            .addChoice('warning', 'warning')),
+            .addChoice('guide', 'guide_menu')),
 
     /**
      * Execution logic for the Setup Command
@@ -26,13 +32,22 @@ module.exports = {
         menuName = interaction.options.getString('menu_name');
         guildMember = interaction.member;
 
-        if (guildMember.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
-            if (menuName === 'roles_menu') await buildRolesMenu(interaction);
-            if (menuName === 'teams_menu') await buildTeamsMenu(interaction);
-            else await buildWarningMessage(interaction);
-        } else {
-            interaction.reply({content: 'Sorry, you don\'t have permission to do this'});
-        }
+        if (menuName === 'roles_menu') await buildRolesMenu(interaction);
+        if (menuName === 'teams_menu') await buildTeamsMenu(interaction);
+        else await buildGuideMenu(interaction);
+    },
+
+    async setPermissions(guild: Guild, commandId: Snowflake) {
+        let commandPermissionsManager = guild.commands.permissions;
+        await commandPermissionsManager.add({
+            command: commandId, permissions: [
+                {
+                    id: '864329392238886942',
+                    type: 'ROLE',
+                    permission: true
+                },
+            ]
+        })
     }
 }
 
@@ -40,13 +55,18 @@ module.exports = {
  * Builds a warning message
  * @param interaction
  */
-async function buildWarningMessage(interaction) {
+async function buildGuideMenu(interaction) {
     let embed = new MessageEmbed()
-        .setDescription("Be careful to check if you already have your schools role.\n" +
-            "The bot will add the role if you don't have it.\n" +
-            "The bot will remove the role if you already have it.\n" +
-            "You can view your school channels once the specific role is applied to you.\n" +
-            "If there's an issues let any admin know!");
+        .setTitle("Self-Roles Guide!")
+        .setDescription(
+            "**Server Roles**\n" +
+            "Indicate you are a Player and/or Team Representative by using the button menu.\n" +
+            "If you accidentally select a button, click it again to remove that role.\n\n" +
+            "**School Roles**\n" +
+            "Pick the school you play for and/or represent by select it from the drop-downs.\n" +
+            "If you pick the wrong school, try again and the roles will sort themselves.\n\n" +
+            "*Ctrl-R will restart your discord and clear your drop-down menu selections without clearing your roles.*"
+        );
 
     interaction.reply({ embeds: [embed] })
 }

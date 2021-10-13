@@ -16,7 +16,14 @@ const v9_1 = require("discord-api-types/v9");
 const discord_js_1 = require("discord.js");
 const config_json_1 = require("./config.json");
 const roles_json_1 = require("./roles.json");
-const client = new discord_js_1.Client({ intents: [discord_js_1.Intents.FLAGS.GUILDS, discord_js_1.Intents.FLAGS.GUILD_MEMBERS, discord_js_1.Intents.FLAGS.GUILD_BANS, discord_js_1.Intents.FLAGS.GUILD_MESSAGES, discord_js_1.Intents.FLAGS.GUILD_MESSAGE_REACTIONS, discord_js_1.Intents.FLAGS.DIRECT_MESSAGES, discord_js_1.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS] });
+const client = new discord_js_1.Client({
+    intents: [
+        discord_js_1.Intents.FLAGS.GUILDS, discord_js_1.Intents.FLAGS.GUILD_MEMBERS,
+        discord_js_1.Intents.FLAGS.GUILD_BANS, discord_js_1.Intents.FLAGS.GUILD_MESSAGES,
+        discord_js_1.Intents.FLAGS.GUILD_MESSAGE_REACTIONS, discord_js_1.Intents.FLAGS.DIRECT_MESSAGES,
+        discord_js_1.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS
+    ]
+});
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 const rest = new rest_1.REST({ version: '9' }).setToken(config_json_1.token);
 client["commands"] = new discord_js_1.Collection();
@@ -68,6 +75,22 @@ function registerClientCommands(commands) {
         try {
             console.log('Started refreshing application (/) commands.');
             yield rest.put(v9_1.Routes.applicationGuildCommands(config_json_1.client_id, config_json_1.guild_id), { body: commands });
+            let guildCommands = yield rest.get(v9_1.Routes.applicationGuildCommands(config_json_1.client_id, config_json_1.guild_id));
+            for (let guildCommand of guildCommands) {
+                let guild = yield client.guilds.fetch(config_json_1.guild_id);
+                let command = client["commands"].get(guildCommand.name);
+                yield guild.commands.permissions.set({ fullPermissions: [
+                        {
+                            id: guildCommand.id,
+                            permissions: [{
+                                    id: '864183475308068875',
+                                    type: 'ROLE',
+                                    permission: false,
+                                }],
+                        },
+                    ] });
+                yield command.setPermissions(guild, guildCommand.id);
+            }
             console.log('Successfully reloaded application (/) commands.');
         }
         catch (error) {
@@ -76,7 +99,7 @@ function registerClientCommands(commands) {
     });
 }
 /**
- * Executes logic on a Command Interaction
+ * Executes logic for a Command Interaction
  * @param interaction
  */
 function receiveCommand(interaction) {
@@ -88,7 +111,7 @@ function receiveCommand(interaction) {
     });
 }
 /**
- * Executes logic on a Button Interaction
+ * Executes logic for a Button Interaction
  * @param interaction
  */
 function receiveButton(interaction) {
@@ -99,7 +122,7 @@ function receiveButton(interaction) {
     });
 }
 /**
- * Executes logic on a SelectMenu Interaction
+ * Executes logic for a SelectMenu Interaction
  * @param interaction
  */
 function receiveSelectMenu(interaction) {
@@ -122,11 +145,11 @@ function determineRoleAction(guildMember, snowflake, interaction) {
         let hasRole = yield memberHasRole(snowflake, guildMember);
         if (hasRole) {
             yield removeRoleFromMember(snowflake, guildMember);
-            interaction.reply({ content: `You removed the role **${builders_1.roleMention(snowflake)}**`, ephemeral: true });
+            yield interaction.reply({ content: `You removed the role **${builders_1.roleMention(snowflake)}**`, ephemeral: true });
         }
         else {
             yield addRoleToMember(snowflake, guildMember);
-            interaction.reply({ content: `You received the role **${builders_1.roleMention(snowflake)}**`, ephemeral: true });
+            yield interaction.reply({ content: `You received the role **${builders_1.roleMention(snowflake)}**`, ephemeral: true });
         }
     });
 }
@@ -137,10 +160,7 @@ function determineRoleAction(guildMember, snowflake, interaction) {
  */
 function addRoleToMember(snowflake, guildMember) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (!(yield memberHasRole(snowflake, guildMember)))
-            yield guildMember.roles.add(snowflake);
-        else
-            yield removeRoleFromMember(snowflake, guildMember);
+        yield guildMember.roles.add(snowflake);
     });
 }
 /**

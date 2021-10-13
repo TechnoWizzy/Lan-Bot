@@ -10,20 +10,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu } = require("discord.js");
-const { team_roles } = require('../roles.json');
+const roles_json_1 = require("../roles.json");
+const builders_1 = require("@discordjs/builders");
 module.exports = {
-    data: new SlashCommandBuilder()
+    data: new builders_1.SlashCommandBuilder()
         .setName('setup')
         .setDescription('Creates a various purpose menu')
+        .setDefaultPermission(false)
         .addStringOption(option => option
         .setName('menu_name')
         .setDescription('The name of the menu to setup')
         .setRequired(true)
         .addChoice('roles', 'roles_menu')
         .addChoice('teams', 'teams_menu')
-        .addChoice('warning', 'warning')),
+        .addChoice('guide', 'guide_menu')),
     /**
      * Execution logic for the Setup Command
      * @param interaction
@@ -34,17 +34,26 @@ module.exports = {
             let guildMember;
             menuName = interaction.options.getString('menu_name');
             guildMember = interaction.member;
-            if (guildMember.permissions.has(discord_js_1.Permissions.FLAGS.MANAGE_MESSAGES)) {
-                if (menuName === 'roles_menu')
-                    yield buildRolesMenu(interaction);
-                if (menuName === 'teams_menu')
-                    yield buildTeamsMenu(interaction);
-                else
-                    yield buildWarningMessage(interaction);
-            }
-            else {
-                interaction.reply({ content: 'Sorry, you don\'t have permission to do this' });
-            }
+            if (menuName === 'roles_menu')
+                yield buildRolesMenu(interaction);
+            if (menuName === 'teams_menu')
+                yield buildTeamsMenu(interaction);
+            else
+                yield buildGuideMenu(interaction);
+        });
+    },
+    setPermissions(guild, commandId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let commandPermissionsManager = guild.commands.permissions;
+            yield commandPermissionsManager.add({
+                command: commandId, permissions: [
+                    {
+                        id: '864329392238886942',
+                        type: 'ROLE',
+                        permission: true
+                    },
+                ]
+            });
         });
     }
 };
@@ -52,14 +61,17 @@ module.exports = {
  * Builds a warning message
  * @param interaction
  */
-function buildWarningMessage(interaction) {
+function buildGuideMenu(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        let embed = new MessageEmbed()
-            .setDescription("Be careful to check if you already have your schools role.\n" +
-            "The bot will add the role if you don't have it.\n" +
-            "The bot will remove the role if you already have it.\n" +
-            "You can view your school channels once the specific role is applied to you.\n" +
-            "If there's an issues let any admin know!");
+        let embed = new discord_js_1.MessageEmbed()
+            .setTitle("Self-Roles Guide!")
+            .setDescription("**Server Roles**\n" +
+            "Indicate you are a Player and/or Team Representative by using the button menu.\n" +
+            "If you accidentally select a button, click it again to remove that role.\n\n" +
+            "**School Roles**\n" +
+            "Pick the school you play for and/or represent by select it from the drop-downs.\n" +
+            "If you pick the wrong school, try again and the roles will sort themselves.\n\n" +
+            "*Ctrl-R will restart your discord and clear your drop-down menu selections without clearing your roles.*");
         interaction.reply({ embeds: [embed] });
     });
 }
@@ -93,7 +105,7 @@ function buildTeamsMenu(interaction) {
  * Builds the Teams Embed
  */
 function buildTeamsEmbed() {
-    return new MessageEmbed()
+    return new discord_js_1.MessageEmbed()
         .setTitle('Schools Menu')
         .setDescription('Select which school you represent.');
 }
@@ -101,7 +113,7 @@ function buildTeamsEmbed() {
  * Builds the Roles Embed
  */
 function buildRolesEmbed() {
-    return new MessageEmbed()
+    return new discord_js_1.MessageEmbed()
         .setTitle('Roles Menu')
         .setDescription('Select all roles that apply to you.');
 }
@@ -114,8 +126,8 @@ function buildTeamsActionRow() {
     schools = sortSchools();
     actionRowsArray = [];
     for (let i = 0; i < Math.ceil(schools.length / 25); i++) {
-        let actionRow = new MessageActionRow();
-        let selectMenu = new MessageSelectMenu()
+        let actionRow = new discord_js_1.MessageActionRow();
+        let selectMenu = new discord_js_1.MessageSelectMenu()
             .setCustomId(`school_${i}`)
             .setPlaceholder('Select Your School');
         for (let j = i * 25; j < (i * 25) + 25; j++) {
@@ -137,11 +149,11 @@ function buildTeamsActionRow() {
  * Builds the Roles ActionRow
  */
 function buildRolesActionRow() {
-    return new MessageActionRow()
-        .addComponents(new MessageButton()
+    return new discord_js_1.MessageActionRow()
+        .addComponents(new discord_js_1.MessageButton()
         .setCustomId('864329849916358666')
         .setLabel('Player')
-        .setStyle('PRIMARY'), new MessageButton()
+        .setStyle('PRIMARY'), new discord_js_1.MessageButton()
         .setCustomId('864329792156729354')
         .setLabel('Team Rep')
         .setStyle('PRIMARY'));
@@ -151,7 +163,7 @@ function buildRolesActionRow() {
  */
 function sortSchools() {
     let schools;
-    schools = team_roles;
+    schools = roles_json_1.team_roles;
     return schools.sort(function (a, b) {
         let name1 = a.name.toLowerCase();
         let name2 = b.name.toLowerCase();

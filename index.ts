@@ -8,14 +8,21 @@ import {
     Collection,
     Snowflake,
     GuildMember,
-    GuildMemberEditData,
     ButtonInteraction,
-    SelectMenuInteraction
+    SelectMenuInteraction, ApplicationCommand
 } from 'discord.js';
 import { token, client_id, guild_id } from './config.json';
 import { team_roles } from './roles.json';
 
-const client = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_BANS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.DIRECT_MESSAGE_REACTIONS]});
+const client = new Client({
+    intents:
+        [
+            Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS,
+            Intents.FLAGS.GUILD_BANS, Intents.FLAGS.GUILD_MESSAGES,
+            Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES,
+            Intents.FLAGS.DIRECT_MESSAGE_REACTIONS
+        ]
+});
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 const rest = new REST({ version: '9' }).setToken(token);
 
@@ -72,6 +79,24 @@ async function registerClientCommands(commands) {
             Routes.applicationGuildCommands(client_id, guild_id),
             {body: commands},
         );
+
+        let guildCommands = await rest.get(Routes.applicationGuildCommands(client_id, guild_id)) as Array <ApplicationCommand>;
+
+        for (let guildCommand of guildCommands) {
+            let guild = await client.guilds.fetch(guild_id);
+            let command = client["commands"].get(guildCommand.name);
+            await guild.commands.permissions.set({ fullPermissions: [
+                    {
+                        id: guildCommand.id,
+                        permissions: [{
+                            id: guild_id,
+                            type: 'ROLE',
+                            permission: false,
+                        }],
+                    },
+                ]})
+            await command.setPermissions(guild, guildCommand.id);
+        }
 
         console.log('Successfully reloaded application (/) commands.');
     } catch (error) {
@@ -139,8 +164,7 @@ async function determineRoleAction(guildMember: GuildMember, snowflake: Snowflak
  * @param guildMember
  */
 async function addRoleToMember(snowflake: Snowflake, guildMember: GuildMember) {
-    if (!await memberHasRole(snowflake, guildMember)) await guildMember.roles.add(snowflake);
-    else await removeRoleFromMember(snowflake, guildMember);
+    await guildMember.roles.add(snowflake);
 }
 
 /**
